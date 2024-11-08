@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Запись и анализ звука</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212; /* Темный фон */
+            color: #e0e0e0; /* Светло-серый текст */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            position: relative; /* Для анимационных элементов */
+            overflow: hidden; /* Скрыть элементы, выходящие за пределы */
+        }
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-align: center;
+            transition: color 0.3s ease; /* Плавный переход для заголовка */
+        }
+        button {
+            background-color: #1e1e1e; /* Темно-серый фон для кнопок */
+            color: #e0e0e0; /* Светло-серый текст для кнопок */
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); /* Тень для кнопок */
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease; /* Плавный переход для фона и тени */
+        }
+        button:hover {
+            background-color: #333333; /* Более светлый фон при наведении */
+            transform: translateY(-2px); /* Подъем кнопки при наведении */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.7); /* Увеличенная тень при наведении */
+        }
+        button:disabled {
+            background-color: #555555; /* Темно-серый фон для отключенных кнопок */
+            cursor: not-allowed; /* Указатель "нельзя" для отключенных кнопок */
+        }
+        #morse-code {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #e0e0e0; /* Светло-серый текст для сообщения */
+        }
+        /* Стили для смайлов */
+        .emoji {
+            position: absolute;
+            font-size: 24px;
+            opacity: 0.8;
+            pointer-events: none; /* Чтобы смайлы не мешали кликам по другим элементам */
+        }
+    </style>
+</head>
+<body>
+<h1>Запись звука</h1>
+<button id="start-recording">Начать запись</button>
+<button id="stop-recording" disabled>Остановить запись</button>
+<audio id="audio" controls></audio>
+<p id="morse-code"></p>
+<script>
+    // Функция для создания смайлов
+    const emojis = ['🎤', '🎧', '🎼', '🎵', '🎶', '🔊', '🔈'];
+
+    function createEmoji() {
+        const emoji = document.createElement('div');
+        emoji.className = 'emoji';
+        emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        // Устанавливаем случайные позиции
+        emoji.style.left = Math.random() * 100 + 'vw';
+        emoji.style.bottom = '-50px'; // Начальная позиция снизу
+
+        // Добавляем смайл на страницу
+        document.body.appendChild(emoji);
+
+        // Анимация движения
+        const animationDuration = Math.random() * 5 + 5; // Случайная продолжительность анимации
+        emoji.animate([
+            { transform: 'translateY(0)' },
+            { transform: `translateY(-100vh)` }
+        ], {
+            duration: animationDuration * 1000,
+            easing: 'linear',
+            iterations: 1,
+            fill: 'forwards'
+        });
+
+        // Удаляем смайл после анимации
+        setTimeout(() => {
+            emoji.remove();
+        }, animationDuration * 1000);
+    }
+
+    // Создаем смайлы через определенные промежутки времени
+    setInterval(createEmoji, 1000); // Каждую секунду
+
+    let mediaRecorder;
+    let audioChunks = [];
+    document.getElementById('start-recording').onclick = async () => {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder.ondataavailable = event => {
+            audioChunks.push(event.data);
+        };
+        mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav; codecs=pcm' });
+            const arrayBuffer = await audioBlob.arrayBuffer();
+            const audioData = new Uint8Array(arrayBuffer);
+            audioChunks = [];
+            // Отправка аудиоданных на сервер
+            const response = await fetch('http://localhost:80/FA/tapping_auth', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'audio/wav' // Изменено на 'audio/wav'
+                },
+                body: audioData
+            });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            document.getElementById('audio').src = audioUrl;
+        };
+        mediaRecorder.start();
+        document.getElementById('start-recording').disabled = true;
+        document.getElementById('stop-recording').disabled = false;
+    };
+    document.getElementById('stop-recording').onclick = () => {
+        mediaRecorder.stop();
+        document.getElementById('start-recording').disabled = false;
+        document.getElementById('stop-recording').disabled = true;
+    };
+</script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ru" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css?family=Raleway:400,700');
+        *, *:before, *:after {
+            box-sizing: border-box;
+        }
+        body {
+            min-height: 100vh;
+            font-family: 'Raleway', sans-serif;
+            background-color: #000; /* Черный фон */
+            color: #fff; /* Белый текст */
+        }
+        .container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            &:hover, &:active {
+                .top, .bottom {
+                    &:before, &:after {
+                        margin-left: 200px;
+                        transform-origin: -200px 50%;
+                        transition-delay: 0s;
+                    }
+                }
+                .center {
+                    opacity: 1;
+                    transition-delay: 0.2s;
+                }
+            }
+        }
+        .top, .bottom {
+            &:before, &:after {
+                content: '';
+                display: block;
+                position: absolute;
+                width: 200vmax;
+                height: 200vmax;
+                top: 50%;
+                left: 50%;
+                margin-top: -100vmax;
+                transform-origin: 0 50%;
+                transition: all 0.5s cubic-bezier(0.445, 0.05, 0, 1);
+                z-index: 10;
+                opacity: 0.65;
+                transition-delay: 0.2s;
+            }
+        }
+        .top {
+            &:before { transform: rotate(45deg); background: rgba(255, 255, 255, 0.1); box-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+            &:after { transform: rotate(135deg); background: rgba(255, 255, 255, 0.1); box-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+        }
+        .bottom {
+            &:before { transform: rotate(-45deg); background: rgba(255, 255, 255, 0.1); box-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+            &:after { transform: rotate(-135deg); background: rgba(255, 255, 255, 0.1); box-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+        }
+        .center {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            top: 50%;
+            left: 50%;
+            margin-left: -200px;
+            margin-top: -200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.445, 0.05, 0, 1);
+            transition-delay: 0s;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8); /* Неоновое свечение текста */
+        }
+        input {
+            width: 100%;
+            padding: 15px;
+            margin: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background-color: #222; /* Темный фон для полей ввода */
+            color: #fff; /* Белый текст */
+            transition: border-color 0.3s; /* Плавный переход для границы */
+        }
+        input:focus {
+            border-color: #60b8d4; /* Цвет границы при фокусе */
+            outline: none; /* Убираем обводку при фокусе */
+            box-shadow: 0 0 5px rgba(96, 184, 212, 0.5); /* Легкая тень при фокусе */
+        }
+        .social-auth-button {
+            padding: 10px 20px; /* Отступы внутри кнопки */
+            border: 1px solid #ccc; /* Светлая граница */
+            border-radius: 4px; /* Скругленные углы */
+            background-color: #444; /* Темный фон */
+            color: #fff; /* Белый текст */
+            font-size: 16px; /* Размер шрифта */
+            cursor: pointer; /* Указатель при наведении */
+            transition: background-color 0.3s, color 0.3s; /* Плавный переход для фона и цвета текста */
+            margin-top: 5px;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5); /* Неоновое свечение текста */
+        }
+        .social-auth-button:hover {
+            background-color: #60b8d4; /* Светлый фон при наведении */
+            color: #000; /* Темный текст при наведении */
+        }
+        .social-auth-button:focus {
+            outline: none; /* Убираем обводку при фокусе */
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); /* Легкая тень при фокусе */
+        }
+        .login-button {
+             padding: 10px 20px; /* Отступы внутри кнопки */
+            border: 1px solid #ccc; /* Светлая граница */
+            border-radius: 4px; /* Скругленные углы */
+            background-color: #fff; /* Темный фон */
+            color: #444; /* Белый текст */
+            font-size: 16px; /* Размер шрифта */
+            cursor: pointer; /* Указатель при наведении */
+            transition: background-color 0.3s, color 0.3s; /* Плавный переход для фона и цвета текста */
+            margin-top: 5px;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5); /* Неоновое свечение текста */
+        }
+        .login-button:hover {
+            background-color: #60b8d4; /* Более темный фон при наведении */
+        }
+        .login-button:focus {
+            outline: none; /* Убираем обводку при фокусе */
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="top"></div>
+    <div class="center">
+        <h2>Войдите в аккаунт</h2>
+        <input type="email" placeholder="Почта/логин"/>
+        <input type="password" placeholder="Пароль"/>
+        <button class="login-button">Вход</button>
+        <a th:href="@{/page/log_in_by_socials}" class="social-auth-button">Аутентификация по социальным сетям</a>
+    </div>
+    <div class="bottom"></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Рисование и Повторение</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #000; /* Черный фон */
+            color: #fff; /* Белый текст */
+            margin: 0;
+            overflow: hidden; /* Скрыть элементы, выходящие за пределы */
+            position: relative; /* Для позиционирования смайлов */
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #fff; /* Белый текст для заголовка */
+        }
+        #drawingCanvas {
+            border: 1px solid #fff; /* Белая рамка для холста */
+            margin-bottom: 20px;
+            background-color: #fff; /* Белый фон для холста */
+            box-shadow: 0 0px 20px rgba(255, 255, 255, 20); /* Тень для канваса */
+            position: relative; /* Для управления z-index */
+            z-index: 10; /* Устанавливаем высокий z-index для канваса */
+        }
+        #drawingForm {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10; /* Устанавливаем высокий z-index для формы рисования */
+        }
+        .icon-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            margin: 5px;
+            transition: color 0.3s;
+            color: #fff; /* Белый цвет иконок */
+        }
+        .icon-button:hover {
+            color: #ccc; /* Цвет при наведении */
+        }
+        /* Стили для смайлов */
+        .emoji {
+            position: absolute;
+            opacity: 0.8;
+            pointer-events: none; /* Чтобы смайлы не мешали кликам по другим элементам */
+            z-index: 5; /* Устанавливаем z-index для смайлов ниже канваса */
+        }
+    </style>
+    <script>
+        let canvas, ctx;
+        let drawing = false;
+        let eraserMode = false; // Режим ластика
+        function initCanvas() {
+            canvas = document.getElementById("drawingCanvas");
+            ctx = canvas.getContext("2d");
+            canvas.width = 800;
+            canvas.height = 600;
+            canvas.addEventListener("mousedown", startDrawing);
+            canvas.addEventListener("mouseup", stopDrawing);
+            canvas.addEventListener("mousemove", draw);
+        }
+        function startDrawing(event) {
+            drawing = true;
+            draw(event);
+        }
+        function stopDrawing() {
+            drawing = false;
+            ctx.beginPath();
+        }
+        function draw(event) {
+            if (!drawing) return;
+            ctx.lineWidth = 5;
+            ctx.lineCap = "round";
+            // Устанавливаем режим рисования или ластика
+            if (eraserMode) {
+                ctx.globalCompositeOperation = "destination-out"; // Режим ластика
+                ctx.strokeStyle = "white"; // Цвет ластика
+            } else {
+                ctx.globalCompositeOperation = "source-over"; // Режим рисования
+                ctx.strokeStyle = "black"; // Цвет рисования
+            }
+            ctx.lineTo(event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop);
+        }
+        async function saveDrawing() {
+            const imageData = canvas.toDataURL("image/png");
+            const byteString = atob(imageData.split(',')[1]);
+            const mimeString = imageData.split(',')[0].split(':')[1].split(';')[0];
+            const arrayBuffer = new Uint8Array(byteString.length);
+            for (let i = 0; i < byteString.length; i++) {
+                arrayBuffer[i] = byteString.charCodeAt(i);
+            }
+            try {
+                const response = await fetch('http://localhost:80/FA/visual_pattern_check', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ picture: arrayBuffer })
+                });
+                if (response.ok) {
+                    // Редирект на другую страницу или обновление текущей
+                    window.location.href = '/page/mainPage'; // Замените на нужный URL
+                } else {
+                    console.error('Ошибка при отправке данных:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+            }
+        }
+        function toggleEraser() {
+            eraserMode = !eraserMode; // Переключаем режим ластика
+            const eraserIcon = document.getElementById("eraserIcon");
+            const pencilIcon = document.getElementById("pencilIcon");
+            if (eraserMode) {
+                eraserIcon.style.display = "none"; // Скрываем иконку карандаша
+                pencilIcon.style.display = "inline"; // Показываем иконку ластика
+            } else {
+                eraserIcon.style.display = "inline"; // Показываем иконку карандаша
+                pencilIcon.style.display = "none"; // Скрываем иконку ластика
+            }
+        }
+
+        // Анимация смайлов
+        const emojis = ['🌛','☀️','⭐️','🌕','⚡️'];
+        const numEmojis = 20; // Количество смайлов
+        function createEmoji() {
+            const emoji = document.createElement('div');
+            emoji.className = 'emoji';
+            emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            // Устанавливаем случайные позиции
+            emoji.style.left = Math.random() * 100 + 'vw';
+            emoji.style.top = Math.random() * 100 + 'vh';
+            // Устанавливаем случайный размер
+            const randomSize = Math.random() * 40 + 10; // Размер от 10 до 50 пикселей
+            emoji.style.fontSize = randomSize + 'px';
+            // Добавляем смайл на страницу
+            document.body.appendChild(emoji);
+            // Анимация движения
+            const animationDuration = Math.random() * 5 + 5; // Случайная продолжительность анимации
+            emoji.animate([
+                { transform: `translateY(0)` },
+                { transform: `translateY(-100vh)` }
+            ], {
+                duration: animationDuration * 1000,
+                easing: 'linear',
+                iterations: 1,
+                fill: 'forwards'
+            });
+            // Удаляем смайл после анимации
+            setTimeout(() => {
+                emoji.remove();
+            }, animationDuration * 1000);
+        }
+        // Создаем смайлы через определенные промежутки времени
+        setInterval(createEmoji, 1000); // Каждую секунду
+    </script>
+</head>
+<body onload="initCanvas()">
+<h1>Рисование и Повторение</h1>
+<canvas id="drawingCanvas"></canvas>
+<div id="drawingForm" style="display: flex; flex-direction: column; align-items: center;">
+    <input type="hidden" id="imageData" name="imageData" />
+    <button type="button" class="icon-button" onclick="saveDrawing()">
+        <i class="fas fa-paper-plane"></i> Отправить
+    </button>
+    <button type="button" class="icon-button" id="eraserIcon" onclick="toggleEraser()">
+        <i class="fas fa-pencil-alt"></i> <!-- Иконка карандаша -->
+    </button>
+    <button type="button" class="icon-button" id="pencilIcon" style="display: none;" onclick="toggleEraser()">
+        <i class="fas fa-smile"></i> <!-- Иконка смайлика -->
+    </button>
+</div>
+</body>
+</html>

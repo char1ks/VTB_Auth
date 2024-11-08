@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>QR Код</title>
+    <style>
+        /* Стили для центрирования содержимого */
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh; /* Высота экрана */
+            margin: 0; /* Убираем отступы */
+            font-family: Arial, sans-serif; /* Шрифт */
+            background-color: #121212; /* Темный фон */
+            color: #ffffff; /* Белый текст */
+        }
+        /* Стили для таймера */
+        #timer {
+            font-size: 48px; /* Размер шрифта для таймера */
+            color: #ffffff; /* Цвет текста таймера - белый */
+            margin: 20px 0; /* Отступы сверху и снизу */
+            transition: color 0.5s; /* Плавный переход цвета */
+        }
+        /* Стили для кнопки */
+        .back-button {
+            padding: 10px 20px; /* Отступы внутри кнопки */
+            font-size: 16px; /* Размер шрифта для кнопки */
+            color: black; /* Цвет текста кнопки */
+            background-color: #ffffff; /* Цвет фона кнопки */
+            border: none; /* Убираем границы */
+            border-radius: 5px; /* Скругление углов */
+            cursor: pointer; /* Указатель при наведении */
+            transition: background-color 0.3s; /* Плавный переход цвета */
+        }
+        .back-button:hover {
+            background-color: #e0e0e0; /* Цвет кнопки при наведении */
+        }
+    </style>
+    <script>
+        // Функция для обратного отсчета
+        function startTimer(duration, display) {
+            var timer = duration, hours, minutes, seconds;
+            var interval = setInterval(function () {
+                hours = parseInt(timer / 3600, 10);
+                minutes = parseInt((timer % 3600) / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+                // Форматируем часы, минуты и секунды
+                hours = hours < 10 ? "0" + hours : hours;
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+                display.textContent = hours + ":" + minutes + ":" + seconds; // Обновляем таймер
+
+                // Изменяем цвет таймера
+                var percentage = (duration - timer) / duration; // Процент прошедшего времени
+                var grayValue = Math.floor(255 * (1 - percentage)); // Вычисляем значение серого цвета
+                display.style.color = `rgb(${grayValue}, ${grayValue}, ${grayValue})`; // Обновляем цвет
+
+                if (--timer < 0) {
+                    clearInterval(interval); // Останавливаем таймер
+                    window.location.href = "/page/personal_account"; // Замените на нужный URL для редиректа
+                }
+            }, 1000); // Обновляем каждую секунду
+        }
+        window.onload = function () {
+            var sixtySeconds = 60, // Длительность таймера в секундах
+                display = document.querySelector('#timer'); // Элемент для отображения времени
+            startTimer(sixtySeconds, display); // Запускаем таймер
+        };
+    </script>
+</head>
+<body>
+<h1>Ваш QR Код</h1>
+<div>
+    <img th:src="${urlToQR}" alt="QR Код" src=""/>
+</div>
+<p id="timer">00:01:00</p> <!-- Элемент для отображения таймера -->
+<button class="back-button" onclick="window.location.href='/page/personal_account'">Вернуться назад</button> <!-- Кнопка для возврата -->
+</body>
+</html>

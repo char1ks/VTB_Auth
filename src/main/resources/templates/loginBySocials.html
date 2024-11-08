@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Вход</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            background-color: #1a1a1a; /* Темный фон */
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* Скрыть элементы, выходящие за пределы */
+            position: relative;
+            font-family: Arial, sans-serif; /* Задаем шрифт */
+            color: #fff; /* Белый текст */
+        }
+        .social-login {
+            background-color: rgba(255, 255, 255, 0.1); /* Полупрозрачный фон для формы */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); /* Добавляем тень */
+            position: relative; /* Для позиционирования анимации */
+            z-index: 1; /* Помещаем выше анимации */
+        }
+        h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #fff; /* Цвет заголовка */
+        }
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .social-icons div {
+            margin-right: 10px;
+        }
+        .social-login__icon {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            font-size: 20px;
+            color: #fff;
+            background-color: #007bff;
+            border-radius: 50%;
+            text-decoration: none;
+            margin-right: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Тень для иконок */
+            transition: transform 0.3s ease; /* Плавный переход при наведении */
+        }
+        .social-login__icon:hover {
+            transform: scale(1.1); /* Увеличение иконки при наведении */
+        }
+        /* Анимация солнца и луны */
+        .sun {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            animation: moveUp 10s linear infinite;
+        }
+        .moon {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            animation: moveDown 12s linear infinite;
+        }
+        @keyframes moveUp {
+            0% {
+                transform: translateY(100vh);
+            }
+            100% {
+                transform: translateY(-10vh);
+            }
+        }
+        @keyframes moveDown {
+            0% {
+                transform: translateY(-10vh);
+            }
+            100% {
+                transform: translateY(100vh);
+            }
+        }
+        /* Стили для смайлов */
+        .emoji {
+            position: absolute;
+            opacity: 0.8;
+            pointer-events: none; /* Чтобы смайлы не мешали кликам по другим элементам */
+        }
+    </style>
+</head>
+<body>
+
+<div class="sun" style="left: 10%; top: 100%;">
+    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="32" cy="32" r="12" fill="yellow" />
+        <line x1="32" y1="0" x2="32" y2="10" stroke="yellow" stroke-width="2"/>
+        <line x1="32" y1="64" x2="32" y2="54" stroke="yellow" stroke-width="2"/>
+        <line x1="0" y1="32" x2="10" y2="32" stroke="yellow" stroke-width="2"/>
+        <line x1="64" y1="32" x2="54" y2="32" stroke="yellow" stroke-width="2"/>
+        <line x1="9" y1="9" x2="19" y2="19" stroke="yellow" stroke-width="2"/>
+        <line x1="45" y1="45" x2="55" y2="55" stroke="yellow" stroke-width="2"/>
+        <line x1="9" y1="55" x2="19" y2="45" stroke="yellow" stroke-width="2"/>
+        <line x1="45" y1="19" x2="55" y2="9" stroke="yellow" stroke-width="2"/>
+    </svg>
+</div>
+<div class="social-login">
+    <h3>Войти с помощью...</h3>
+    <div class="social-icons">
+        <div>
+            <script src="https://unpkg.com/@vkid/sdk@<3.0.0/dist-sdk/umd/index.js"></script>
+            <script type="text/javascript">
+                console.log('VKIDSDK:', window.VKIDSDK);
+                if ('VKIDSDK' in window) {
+                    const VKID = window.VKIDSDK;
+                    VKID.Config.init({
+                        app: 52528314,
+                        redirectUrl: 'https://localhost',
+                        responseMode: VKID.ConfigResponseMode.Callback,
+                        source: VKID.ConfigSource.LOWCODE,
+                    });
+                    const oneTap = new VKID.OneTap();
+                    oneTap.render({
+                        container: document.currentScript.parentElement,
+                        showAlternativeLogin: true,
+                        styles: {
+                            width: 40
+                        },
+                        oauthList: [
+                            'ok_ru',
+                            'mail_ru'
+                        ]
+                    })
+                    .on(VKID.WidgetEvents.ERROR, vkidOnError)
+                    .on(VKID.OneTapInternalEvents.LOGIN_SUCCESS, function (payload) {
+                        const code = payload.code;
+                        const deviceId = payload.device_id;
+                        VKID.Auth.exchangeCode(code, deviceId)
+                            .then(vkidOnSuccess)
+                            .catch(vkidOnError);
+                    });
+                    function getCsrfToken() {
+                        const cookies = document.cookie.split(';');
+                        for (let cookie of cookies) {
+                            const [name, value] = cookie.trim().split('=');
+                            if (name === 'XSRF-TOKEN') {
+                                return value;
+                            }
+                        }
+                        return null;
+                    }
+                    function vkidOnSuccess(data) {
+                        alert("Успех!");
+                        var dataString = JSON.stringify(data);
+                        fetch('http://localhost:80/vk/api/tokens', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-XSRF-TOKEN': getCsrfToken() // Добавляем CSRF токен в заголовок
+                            },
+                            body: dataString
+                        })
+                        .then(response => response.text())
+                        .then(responseText => {
+                            console.log('Response from server:', responseText);
+                        })
+                        .catch(error => {
+                            console.error('Error sending data:', error);
+                        });
+                    }
+                    function vkidOnError(error) {
+                    }
+                }
+            </script>
+        </div>
+        <a href="http://localhost:80/user/gmail/auth" class="social-login__icon fab fa-google"></a>
+    </div>
+</div>
+<!-- Анимация смайлов -->
+<script>
+    const emojis = ['🌛','☀️','⭐️','🌕','⚡️'];
+    const numEmojis = 20; // Количество смайлов
+    function createEmoji() {
+        const emoji = document.createElement('div');
+        emoji.className = 'emoji';
+        emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        // Устанавливаем случайные позиции
+        emoji.style.left = Math.random() * 100 + 'vw';
+        emoji.style.top = Math.random() * 100 + 'vh';
+        // Устанавливаем случайный размер
+        const randomSize = Math.random() * 80 + 10; // Размер от 10 до 40 пикселей
+        emoji.style.fontSize = randomSize + 'px';
+        // Добавляем смайл на страницу
+        document.body.appendChild(emoji);
+        // Анимация движения
+        const animationDuration = Math.random() * 5 + 5; // Случайная продолжительность анимации
+        emoji.animate([
+            { transform: `translateY(0)` },
+            { transform: `translateY(-100vh)` }
+        ], {
+            duration: animationDuration * 1000,
+            easing: 'linear',
+            iterations: 1,
+            fill: 'forwards'
+        });
+        // Удаляем смайл после анимации
+        setTimeout(() => {
+            emoji.remove();
+        }, animationDuration * 1000);
+    }
+    // Создаем смайлы через определенные промежутки времени
+    setInterval(createEmoji, 1000); // Каждую секунду
+</script>
+</body>
+</html>

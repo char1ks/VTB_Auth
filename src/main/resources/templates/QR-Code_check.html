@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Аутентификация по QR-коду</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh; /* Высота экрана */
+            margin: 0; /* Убираем отступы */
+            font-family: Arial, sans-serif; /* Шрифт */
+            background-color: #000; /* Черный фон */
+            color: #fff; /* Белый текст */
+            overflow: hidden; /* Скрываем скроллинг */
+            position: relative; /* Относительное позиционирование для смайлов */
+        }
+        h1 {
+            margin-bottom: 20px; /* Отступ снизу заголовка */
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); /* Неоновый эффект */
+        }
+        p {
+            margin-bottom: 30px; /* Отступ снизу описания */
+            text-align: center; /* Центрируем текст */
+            max-width: 600px; /* Максимальная ширина описания */
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Центрируем элементы формы */
+            background-color: rgba(255, 255, 255, 0.1); /* Полупрозрачный белый фон формы */
+            padding: 20px; /* Отступы внутри формы */
+            border-radius: 5px; /* Скругление углов формы */
+            box-shadow: 0 2px 10px rgba(255, 255, 255, 0.3); /* Неоновая тень для формы */
+        }
+        input[type="text"] {
+            width: 100%; /* Ширина поля ввода */
+            padding: 10px; /* Отступы внутри поля ввода */
+            margin-bottom: 20px; /* Отступ снизу поля ввода */
+            border: 1px solid #ccc; /* Граница поля ввода */
+            border-radius: 5px; /* Скругление углов поля ввода */
+            background-color: rgba(255, 255, 255, 0.2); /* Полупрозрачный фон для поля ввода */
+            color: #fff; /* Цвет текста в поле ввода */
+        }
+        button {
+            padding: 10px 20px; /* Отступы внутри кнопки */
+            font-size: 16px; /* Размер шрифта для кнопки */
+            color: white; /* Цвет текста кнопки */
+            background-color: #555; /* Цвет фона кнопки */
+            border: none; /* Убираем границы */
+            border-radius: 5px; /* Скругление углов кнопки */
+            cursor: pointer; /* Указатель при наведении */
+            transition: background-color 0.3s; /* Плавный переход цвета */
+        }
+        button:hover {
+            background-color: #777; /* Цвет кнопки при наведении */
+        }
+        .error {
+            color: red; /* Цвет текста ошибки */
+            margin-top: 10px; /* Отступ сверху для ошибки */
+        }
+        .emoji {
+            position: absolute;
+            font-size: 24px;
+            animation: float 5s infinite; /* Анимация плавания */
+        }
+        @keyframes float {
+            0% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+            100% {
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+<h1>Аутентификация по QR-коду</h1>
+<p>
+    Пожалуйста, введите 6-значный код, который вы получили с помощью QR-кода для завершения процесса аутентификации.
+</p>
+<form id="authForm">
+    <input type="text" id="authCode" maxlength="6" placeholder="Введите 6-значный код" required>
+    <button type="submit">Подтвердить</button>
+    <p class="error" id="errorMessage" style="display: none;"></p> <!-- Сообщение об ошибке -->
+</form>
+
+<!-- Смайлики на заднем фоне -->
+<div class="emoji" style="top: 10%; left: 10%;">👾</div>
+<div class="emoji" style="top: 20%; left: 50%;">📱</div>
+<div class="emoji" style="top: 30%; left: 80%;">📲</div>
+<div class="emoji" style="top: 50%; left: 20%;">👽</div>
+<div class="emoji" style="top: 70%; left: 70%;">🕶️</div>
+<div class="emoji" style="top: 80%; left: 30%;">🛹</div>
+<div class="emoji" style="top: 90%; left: 60%;">🏁</div>
+
+<script>
+    let errorCount = 0; // Счетчик ошибок
+    const maxErrors = 3; // Максимальное количество ошибок
+    const redirectUrl = '/page/auth'; // URL для редиректа при 3 ошибках
+    document.getElementById('authForm').addEventListener('submit', async function(event) {
+        event.preventDefault(); // Предотвращаем стандартное поведение формы
+        const authCode = document.getElementById('authCode').value; // Получаем значение кода
+        const responseMessage = document.getElementById('errorMessage'); // Элемент для отображения сообщения об ошибке
+        try {
+            const response = await fetch('http://localhost:80/FA/check_correct', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(authCode), // Отправляем код в теле запроса
+            });
+            const isSuccess = await response.json(); // Получаем ответ от сервера (boolean)
+            if (isSuccess) { // Если ответ успешный
+                window.location.href = '/page/mainPage'; // Замените на нужный URL для успешного редиректа
+            } else {
+                errorCount++; // Увеличиваем счетчик ошибок
+                responseMessage.textContent = 'Неверный код. Попробуйте снова.'; // Показать сообщение об ошибке
+                responseMessage.style.display = 'block'; // Показываем сообщение
+            }
+            // Проверяем, достигли ли мы максимального количества ошибок
+            if (errorCount >= maxErrors) {
+                window.location.href = redirectUrl; // Перенаправляем пользователя
+            }
+        } catch (error) {
+            console.error('Ошибка:', error); // Логируем ошибку
+            responseMessage.textContent = 'Произошла ошибка при связи с сервером.'; // Показать сообщение об ошибке
+            responseMessage.style.display = 'block'; // Показываем сообщение
+        }
+    });
+</script>
+</body>
+</html>

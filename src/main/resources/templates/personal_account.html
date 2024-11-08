@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Личный кабинет</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            background-color: #121212; /* Темный фон */
+            color: #e0e0e0; /* Светло-серый текст */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background-color 0.3s ease, color 0.3s ease; /* Плавный переход для фона и цвета текста */
+            position: relative; /* Для позиционирования псевдоэлементов */
+        }
+
+        /* Боковые градиенты */
+        .side-background {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 50px; /* Ширина боковых панелей */
+            background: linear-gradient(to right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0)); /* Полупрозрачный градиент */
+        }
+        .left-background {
+            left: 0;
+        }
+        .right-background {
+            right: 0;
+        }
+
+.flower {
+    position: absolute;
+    bottom: 0; /* Начальная позиция на уровне нижней части экрана */
+    width: 30px;
+    height: 30px;
+    background-image: url('https://img.icons8.com/color/48/000000/flower.png'); /* Замените на ссылку на изображение цветка */
+    background-size: cover;
+    animation: grow 5s infinite alternate; /* Анимация роста */
+}
+
+        @keyframes grow {
+            0% {
+                transform: scale(0);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Позиционирование цветочков */
+        .flower-left {
+            left: 10px;
+            animation-delay: 0s; /* Задержка для левого цветка */
+        }
+        .flower-right {
+            right: 10px;
+            animation-delay: 1s; /* Задержка для правого цветка */
+        }
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-align: center;
+            transition: color 0.3s ease; /* Плавный переход для заголовка */
+            animation: fadeIn 1s ease; /* Анимация появления заголовка */
+        }
+        h2 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            text-align: center;
+            transition: color 0.3s ease; /* Плавный переход для подзаголовка */
+            animation: fadeIn 1s ease; /* Анимация появления подзаголовка */
+        }
+        .info-container, .settings-container {
+            background: #1e1e1e; /* Темно-серый фон для контейнеров */
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); /* Тень для контейнеров */
+            padding: 20px;
+            width: 300px;
+            margin-bottom: 20px;
+            transition: box-shadow 0.3s ease; /* Плавный переход для тени */
+            opacity: 0; /* Начальная прозрачность */
+            animation: fadeIn 1s ease forwards; /* Анимация появления контейнера */
+        }
+        .info-container:nth-child(1) { animation-delay: 0.5s; } /* Задержка для первого контейнера */
+        .settings-container { animation-delay: 1s; } /* Задержка для второго контейнера */
+
+        .info-container:hover, .settings-container:hover {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7); /* Увеличенная тень при наведении */
+        }
+        .toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .toggle-label {
+            font-size: 16px;
+            margin-right: 10px;
+            color: #ffffff; /* Белый цвет для меток */
+            transition: color 0.3s ease; /* Плавный переход для текста метки */
+        }
+        .toggle-button {
+            border: none;
+            border-radius: 25px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); /* Тень для кнопок */
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease; /* Плавный переход для фона и тени */
+            position: relative;
+            color: #e0e0e0; /* Светло-серый текст для кнопок */
+            animation: fadeIn 1s ease forwards; /* Анимация появления кнопок */
+            opacity: 0; /* Начальная прозрачность */
+        }
+        .toggle-button.on {
+            background: linear-gradient(90deg, #4caf50, #66bb6a); /* Зеленый градиент */
+        }
+        .toggle-button.off {
+            background: linear-gradient(90deg, #ff4d4d, #ff6666); /* Красный градиент */
+        }
+        .toggle-button:hover {
+            transform: translateY(-2px); /* Подъем кнопки при наведении */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.7); /* Увеличенная тень при наведении */
+        }
+        .toggle-button:active {
+            transform: translateY(0); /* Возврат кнопки в исходное положение при нажатии */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Уменьшенная тень при нажатии */
+        }
+        @media (max-width: 600px) {
+            .info-container, .settings-container {
+                width: 90%; /* Ширина контейнеров на мобильных устройствах */
+            }
+            h1 {
+                font-size: 2em; /* Уменьшение размера заголовка на мобильных устройствах */
+            }
+            h2 {
+                font-size: 1.3em; /* Уменьшение размера подзаголовка на мобильных устройствах */
+            }
+        }
+
+        /* Анимация появления */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px); /* Сдвиг вниз при появлении */
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+<h1>Личный кабинет</h1>
+<div class="info-container">
+    <h2>Информация о пользователе</h2>
+    <p>Имя: <span th:text="${user.first_name}"></span></p>
+    <p>Фамилия: <span th:text="${user.last_name}"></span></p>
+    <p>Email: <span th:text="${user.email}"></span></p>
+    <p>Никнейм: <span th:text="${user.nickname}"></span></p>
+    <p>Дата рождения: <span th:text="${user.birth_date}"></span></p>
+</div>
+<div class="settings-container">
+    <h2>Настройки безопасности</h2>
+    <div class="toggle">
+        <label class="toggle-label" for="twoFA">Добавить QR-код:</label>
+        <button id="twoFA" class="toggle-button" th:class="${QrCodeEnabled} ? 'toggle-button.on' : 'toggle-button.off'"
+                th:text="${QrCodeEnabled} ? 'Включено' : 'Выключено'"
+                onclick="redirectToQRCode()"></button>
+    </div>
+    <div class="toggle">
+        <label class="toggle-label" for="visualPattern">Визуальный паттерн:</label>
+        <button id="visualPattern" class="toggle-button" th:class="${VisualPatternEnabled} ? 'toggle-button.on' : 'toggle-button.off'"
+                th:text="${VisualPatternEnabled} ? 'Включено' : 'Выключено'"
+                onclick="redirectToVisualPattern()"></button>
+    </div>
+    <div class="toggle">
+        <label class="toggle-label" for="tapping">Настукивание:</label>
+        <button id="tapping" class="toggle-button" th:class="${TappingEnabled} ? 'toggle-button.on' : 'toggle-button.off'"
+                th:text="${TappingEnabled} ? 'Включено' : 'Выключено'"
+                onclick="redirectToTapping()"></button>
+    </div>
+</div>
+<script>
+    function redirectToQRCode() {
+        const qrCodeUrl = 'http://localhost:80/page/qr-code';
+        window.location.href = qrCodeUrl;
+    }
+    function redirectToVisualPattern() {
+        const visualPatternUrl = 'http://localhost:80/page/visual_pattern';
+        window.location.href = visualPatternUrl;
+    }
+    function redirectToTapping() {
+        const tappingUrl = 'http://localhost:80/page/tapping'; // Замените на правильный URL для нажатий
+        window.location.href = tappingUrl;
+    }
+</script>
+</body>
+</html>

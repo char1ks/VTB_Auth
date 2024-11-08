@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выбор метода входа</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #000; /* Черный фон */
+            color: #fff; /* Белый текст */
+            overflow: hidden; /* Скрываем скроллинг */
+            position: relative; /* Относительное позиционирование для смайлов */
+        }
+        .container {
+            background-color: rgba(34, 34, 34, 0.8); /* Полупрозрачный темно-серый фон */
+            border-radius: 8px; /* Скругленные углы */
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); /* Неоновая тень */
+            padding: 30px; /* Отступы внутри контейнера */
+            margin-top: 50px; /* Отступ сверху */
+            position: relative; /* Относительное позиционирование для контейнера */
+            z-index: 1; /* Поверх смайлов */
+        }
+        h1 {
+            color: #fff; /* Белый цвет заголовка */
+            margin-bottom: 20px; /* Отступ снизу */
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.7); /* Неоновый эффект */
+        }
+        .alert {
+            font-size: 1.1rem; /* Увеличенный размер шрифта для предупреждения */
+            background-color: rgba(255, 255, 255, 0.1); /* Полупрозрачный фон для предупреждения */
+            color: #fff; /* Белый текст для предупреждения */
+            border: 1px solid rgba(255, 255, 255, 0.3); /* Неоновая рамка */
+        }
+        .btn {
+            width: 100%; /* Ширина кнопок на всю ширину */
+            padding: 15px; /* Отступы внутри кнопок */
+            font-size: 1.1rem; /* Увеличенный размер шрифта для кнопок */
+            margin-bottom: 15px; /* Отступ между кнопками */
+            transition: background-color 0.3s, box-shadow 0.3s; /* Плавный переход для фона кнопок */
+            border: none; /* Убираем рамку */
+            position: relative; /* Относительное позиционирование для кнопок */
+            z-index: 2; /* Поверх смайлов */
+        }
+        .btn-primary {
+            background-color: rgba(255, 255, 255, 0.2); /* Полупрозрачный фон кнопок */
+        }
+        .btn-primary:hover {
+            background-color: rgba(255, 255, 255, 0.4); /* Цвет фона при наведении */
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.6); /* Неоновая тень при наведении */
+        }
+        .btn-visual-pattern {
+            background-color: #ffffff; /* Белый фон для кнопки "Вход по визуальному паттерну" */
+            color: #000; /* Черный текст для кнопки */
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.6); /* Неоновая тень */
+        }
+        .btn-visual-pattern:hover {
+            background-color: #f0f0f0; /* Светло-серый фон при наведении */
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.8); /* Яркая неоновая тень при наведении */
+        }
+        .emoji {
+            position: absolute;
+            font-size: 24px;
+            animation: float 5s infinite; /* Анимация плавания */
+        }
+        @keyframes float {
+            0% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+            100% {
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-5">
+    <h1>Выбор метода входа</h1>
+    <div class="alert alert-info">
+        Пожалуйста, выберите способ входа в ваш аккаунт:
+    </div>
+    <a th:if="${Qr_code_exist != null && Qr_code_exist}" th:href="@{/user/QRcode_page}" class="btn btn-primary">
+        Вход по QR-коду
+    </a>
+    <a th:if="${Visual_pattern_exist != null && Visual_pattern_exist}" th:href="@{/user/visual_pattern_auth}" class="btn btn-visual-pattern">
+        Вход по визуальному паттерну
+    </a>
+    <a th:if="${Tapping_exist != null && Tapping_exist}" th:href="@{/user/tapping_auth}" class="btn btn-primary">
+        Вход по настукиванию
+    </a>
+    <a th:href="@{/user/AI_Question}" value="AI" class="btn btn-primary">
+        Вход по специальным вопросам!
+    </a>
+</div>
+
+<!-- Смайлики на заднем фоне -->
+<div class="emoji" style="top: 10%; left: 10%;">🤖</div>
+<div class="emoji" style="top: 20%; left: 50%;">🤖</div>
+<div class="emoji" style="top: 30%; left: 80%;">🤖</div>
+<div class="emoji" style="top: 50%; left: 20%;">🤖</div>
+<div class="emoji" style="top: 70%; left: 70%;">🤖</div>
+<div class="emoji" style="top: 80%; left: 30%;">🤖</div>
+<div class="emoji" style="top: 90%; left: 60%;">🤖</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
